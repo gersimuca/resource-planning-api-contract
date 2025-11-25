@@ -13,6 +13,8 @@ security:
 tags:
   - name: user
     description: User resource.
+  - name: notification
+    description: Notification resource.
 paths:
   /users:
     post:
@@ -59,6 +61,25 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/ListRolesResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+  /notifications:
+    get:
+      tags:
+        - notifications
+      description: "Subscribe to real-time SSE notifications."
+      operationId: getNotifications
+      responses:
+        "200":
+          $ref: '#/components/responses/SseNotificationStreamResponse'
         "400":
           $ref: '#/components/responses/BadRequest'
         "401":
@@ -117,7 +138,31 @@ components:
           items:
             type: string
       description: List of roles.
+    SseNotification:
+      type: object
+      properties:
+        event:
+          type: string
+          description: The event name or type.
+          example: "notification"
+        data:
+          type: string
+          description: The payload data of the event (i.e., the notification message).
+          example: "New event happened at 2025-11-25T12:00:00Z"
+      description: A single notification event in the SSE stream.
   responses:
+    SseNotificationStreamResponse:
+      description: "Stream of SSE notifications."
+      content:
+        text/event-stream:
+          schema:
+            $ref: '#/components/schemas/SseNotification'
+          examples:
+            example1:
+              value: |
+                event: notification
+                data: New event happened at 2025-11-25T12:00:00Z
+                \n\n
     UserDetailsResponse:
       description: Successfully retrieved user details.
       content:
